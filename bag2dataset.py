@@ -38,7 +38,9 @@ def main():
     parser = argparse.ArgumentParser(description="Extract images from a ROS bag.")
     parser.add_argument("bag_file", help="Input ROS bag.")
     parser.add_argument("output_dir", help="Output directory.")
-    parser.add_argument("image_topic", help="Image topic.")
+    parser.add_argument("image_topic", nargs='+', type=str, help="Image and IMU topics.",
+                        default=["/camera/color/image_raw",
+                                                   "/camera/aligned_depth_to_color/image_raw", "/camera/imu"])
 
     args = parser.parse_args()
 
@@ -56,8 +58,7 @@ def main():
         os.mkdir(args.output_dir)
     f = open(os.path.join(args.output_dir, "imu.txt"), 'w')
     # you can use topics= [args.image_topic] to specify your topic name
-    for topic, msg, t in bag.read_messages(topics=["/camera/color/image_raw",
-                                                   "/camera/aligned_depth_to_color/image_raw", "/camera/imu"]):
+    for topic, msg, t in bag.read_messages(topics=args.image_topic):
         cv_img = bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
         output_fname = ""
         if topic == "/camera/color/image_raw":
