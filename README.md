@@ -95,5 +95,9 @@ Apply the settings and close the window. Then, you can use the play and debug ic
 To convert the bag file, simply run:
 
 ```shell
-python bag2dataset.py --bag_file=/your/bag/file.bag
+# bag2dataset.py bag_filename.bag output_path color_topic_name
+python bag2dataset.py \
+    /mnt/Data/Datasets/VINS_L515/2022-04-20-20-45-15.bag \
+    /mnt/Data/Datasets/VINS_L515/2022-04-20-20-45-15 \
+    color
 ```
