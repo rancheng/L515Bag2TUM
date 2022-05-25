@@ -49,12 +49,15 @@ def main():
     bridge = CvBridge()
     color_count = 0
     depth_count = 0
+    imu_count = 0
     color_stamps = {}
     depth_stamps = {}  # use depth stamps as master and color as aligner for time stamp sync
     if not os.path.exists(args.output_dir):
         os.mkdir(args.output_dir)
+    f = open(os.path.join(args.output_dir, "imu.txt"), 'w')
     # you can use topics= [args.image_topic] to specify your topic name
-    for topic, msg, t in bag.read_messages(topics=["/camera/color/image_raw", "/camera/aligned_depth_to_color/image_raw"]):
+    for topic, msg, t in bag.read_messages(topics=["/camera/color/image_raw",
+                                                   "/camera/aligned_depth_to_color/image_raw", "/camera/imu"]):
         cv_img = bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
         output_fname = ""
         if topic == "/camera/color/image_raw":
@@ -74,6 +77,11 @@ def main():
             print "Wrote depth image %i" % depth_count
             depth_stamps[msg.header.stamp.to_sec()] = output_fname
             depth_count += 1
+        if topic == "/camera/imu":
+            f.write('%.12f %.12f %.12f %.12f %.12f %.12f %.12f\n' %
+                    (msg.header.stamp.to_sec(),
+                     msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z,
+                     msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z))
         cv2.imwrite(output_fname, cv_img)
     bag.close()
 
