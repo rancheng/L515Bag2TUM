@@ -1,0 +1,66 @@
+FROM osrf/ros:melodic-desktop-full
+
+# Arguments
+ARG USER=initial
+ARG GROUP=initial
+ARG UID=1000
+ARG GID=${UID}
+ARG SHELL=/bin/bash
+
+# Replace apt urls
+RUN sh -c '. /etc/lsb-release && echo "deb http://mirrors.sjtug.sjtu.edu.cn/ros/ubuntu/ `lsb_release -cs` main" > /etc/apt/sources.list.d/ros-latest.list'
+
+# Install packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget curl ssh \
+    zsh terminator gnome-terminal git vim tig \
+    dbus-x11 libglvnd0 libgl1 libglx0 libegl1 libxext6 libx11-6 \
+    python-catkin-tools \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+# Env vars for the nvidia-container-runtime.
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute
+
+# change passwd
+RUN echo 'root:work123' | chpasswd
+
+# modify the sshd_config
+RUN sed -i 's/\#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+RUN echo 'export DISPLAY=:0' >> /etc/profile
+
+ENV NOTVISIBLE "in users profile"
+
+RUN echo "export VISIBLE=now" >> /etc/profile
+
+RUN groupadd --gid 1000 work && \
+    useradd --gid 1000 --uid 1000 -ms /bin/bash work
+
+RUN echo 'work:work123' | chpasswd
+
+# copy entrypoint
+COPY entrypoint.bash /entrypoint.bash
+RUN chmod 777 /entrypoint.bash
+
+RUN mkdir -p /home/work/.config/terminator
+RUN mkdir -p /root/.config/terminator
+COPY config/terminator/config /root/.config/terminator
+COPY config/terminator/config /home/work/.config/terminator
+RUN chown -R work:work /home/work/.config
+RUN chown -R root:root /root/.config
+
+RUN sed -i '1i source /opt/ros/melodic/setup.bash' /home/work/.bashrc
+
+RUN sed -i '1i source /opt/ros/melodic/setup.bash' /home/root/.bashrc
+
+USER work
+
+USER root
+
+EXPOSE 22
+
+ENTRYPOINT ["/entrypoint.bash", "terminator"]
