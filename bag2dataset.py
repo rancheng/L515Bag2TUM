@@ -59,7 +59,9 @@ def main():
     f = open(os.path.join(args.output_dir, "imu.txt"), 'w')
     # you can use topics= [args.image_topic] to specify your topic name
     for topic, msg, t in bag.read_messages(topics=args.image_topic):
-        cv_img = bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
+        cv_img = None
+        if "image" in topic:
+            cv_img = bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
         output_fname = ""
         if topic == "/camera/color/image_raw":
             cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
@@ -83,7 +85,8 @@ def main():
                     (msg.header.stamp.to_sec(),
                      msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z,
                      msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z))
-        cv2.imwrite(output_fname, cv_img)
+        if "image" in topic:
+            cv2.imwrite(output_fname, cv_img)
     bag.close()
 
     # start the time sync:

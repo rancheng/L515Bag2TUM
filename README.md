@@ -99,5 +99,13 @@ To convert the bag file, simply run:
 python bag2dataset.py \
     /mnt/Data/Datasets/VINS_L515/2022-04-20-20-45-15.bag \
     /mnt/Data/Datasets/VINS_L515/2022-04-20-20-45-15 \
-    color
+    /camera/color/image_raw \
+    /camera/aligned_depth_to_color/image_raw \
+    /camera/imu
 ```
+
+/home/ran/2022-06-03-10-31-40.bag
+/home/ran/L515_nerf
+"/camera/color/image_raw"
+"/camera/aligned_depth_to_color/image_raw"
+/camera/imu"
