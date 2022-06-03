@@ -81,7 +81,7 @@ def main():
             depth_stamps[msg.header.stamp.to_sec()] = output_fname
             depth_count += 1
         if topic == "/camera/imu":
-            f.write('%.12f %.12f %.12f %.12f %.12f %.12f %.12f\n' %
+            f.write('%.9f %.12f %.12f %.12f %.12f %.12f %.12f\n' %
                     (msg.header.stamp.to_sec(),
                      msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z,
                      msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z))
@@ -118,7 +118,10 @@ def main():
         # record the time stamp
         matched_depth_stamps_t.append([depth_iter_idx, depth_stamps_t[dpt_index]])
     matched_depth_stamps_t = np.array(matched_depth_stamps_t)
-    np.savetxt(os.path.join(seq_base_folder_sync, "timestamps.txt"), matched_depth_stamps_t)
+    # copy imu.txt
+    shutil.copy(os.path.join(args.output_dir, "imu.txt"), os.path.join(seq_base_folder_sync, "imu.txt"))
+    # save
+    np.savetxt(os.path.join(seq_base_folder_sync, "timestamps.txt"), matched_depth_stamps_t, fmt=('%06d', '%.9f'))
     return
 
 if __name__ == '__main__':
