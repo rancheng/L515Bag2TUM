@@ -26,7 +26,7 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# python interpolate_imu_file.py --input "result/imu.txt" --times "result/times_nesc.txt" --output result/imu_align.txt
+# python interpolate_imu_file.py --input "imu_origin.txt" --times "cam0/times_nesc.txt" --output imu.txt
 
 import argparse
 import numpy as np

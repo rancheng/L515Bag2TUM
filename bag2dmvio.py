@@ -1,6 +1,6 @@
 # -*- coding=utf-8 -*-
 # rosbag转换到dm-vio数据集
-# python bag2dataset.py ../2022-04-20-20-45-15.bag result
+# python bag2dataset.py **.bag ./
 
 import numpy as np
 import os
@@ -10,6 +10,7 @@ import shutil
 import copy
 import rosbag
 from cv_bridge import CvBridge
+import json
 
 def main():
     """Extract a folder of images from a rosbag.
@@ -29,22 +30,23 @@ def main():
 
     if not os.path.exists(args.output_dir):
         os.mkdir(args.output_dir)
-    f = open(os.path.join(args.output_dir, "imu.txt"), 'w')
+    f = open(os.path.join(args.output_dir, "imu_origin.txt"), 'w')
     f.write("# timestamp[ns] w.x w.y w.z a.x a.y a.z\n")
 
     time_stamp = []
     time_stamp_float = []
+    exposure_time = {}
 
-    color_directory_path = os.path.join(args.output_dir, "color")
+    color_directory_path = os.path.join(args.output_dir, "cam0/images")
     if not os.path.exists(color_directory_path):
         os.makedirs(color_directory_path)
 
     # you can use topics= [args.image_topic] to specify your topic name
-    for topic, msg, t in bag.read_messages(topics=["/camera/color/image_raw", "/camera/imu"]):
+    for topic, msg, t in bag.read_messages(topics=["/camera/infra1/image_rect_raw", "/camera/imu", "/camera/infra1/metadata"]):
         output_fname = ""
-        if topic == "/camera/color/image_raw":
+        if topic == "/camera/infra1/image_rect_raw":
             cv_img = bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
-            cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+            # cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
             cur_time = msg.header.stamp.to_nsec()
             cur_time_sec = msg.header.stamp.to_sec()
             time_stamp.append(cur_time)
@@ -57,14 +59,21 @@ def main():
                     (msg.header.stamp.to_nsec(),
                      msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z,
                      msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z))
+
+        if topic == "/camera/infra1/metadata":
+            metadata = json.loads(msg.json_data)
+            exposure_time[msg.header.stamp.to_nsec()] = metadata["actual_exposure"] * 1e-3
+
     bag.close()
 
     # np.save("timestamp.npy", np.asarray(time_stamp))
-    time_result = np.ndarray((len(time_stamp), 2), dtype=object)
+    time_result = np.ndarray((len(time_stamp), 3), dtype=object)
     time_result[:, 0] = time_stamp
     time_result[:, 1] = time_stamp_float
-    np.savetxt(os.path.join(args.output_dir, "times.txt"), time_result, fmt=['%1i'] + ['%1f'])
-    np.savetxt(os.path.join(args.output_dir, "times_nesc.txt"), time_stamp, fmt=['%1i'])
+    for i in range(len(time_stamp)):
+        time_result[i, 2] = exposure_time[time_stamp[i]]
+    np.savetxt(os.path.join(args.output_dir, "cam0/times.txt"), time_result, fmt=['%1i'] + ['%1f'] + ['%1f'])
+    np.savetxt(os.path.join(args.output_dir, "cam0/times_nesc.txt"), time_stamp, fmt=['%1i'])
     return
 
 if __name__ == '__main__':
