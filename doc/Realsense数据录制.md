@@ -2,9 +2,33 @@
 
 启动realsense node
 
-D455:
+D455 launchfile `rs_d400_dmvio.launch`:
+
+```xml
+<launch>
+<include file="$(find realsense2_camera)/launch/rs_camera.launch">  
+   <arg name="enable_gyro" value="true" />  
+   <arg name="enable_accel" value="true" />  
+   <arg name="unite_imu_method" value="linear_interpolation" />  
+   <arg name="color_width" value="640" />  
+   <arg name="color_height" value="480" />  
+   <arg name="color_fps" value="30" />  
+   <arg name="enable_infra1" value="true" />  
+   <arg name="enable_infra2" value="true" />  
+   <arg name="infra_width" value="640" />  
+   <arg name="infra_height" value="480" />  
+   <arg name="infra_fps" value="30" />  
+</include>  
+<rosparam> /camera/stereo_module/emitter_enabled: 2</rosparam>
+</launch>
+```
+
+run D455/D435i:
+
 ```shell
-roslaunch realsense2_camera rs_camera.launch enable_depth:=false enable_infra1:=true enable_gyro:=true enable_accel:=true unite_imu_method:=linear_interpolation
+sudo cp rs_d455_dmvio.launch /opt/ros/melodic/share/realsense2_camera/launch/
+source /opt/ros/melodic/setup.bash
+roslaunch realsense2_camera rs_d400_dmvio.launch
 ```
 
 
