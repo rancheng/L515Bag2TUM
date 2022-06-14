@@ -4,9 +4,7 @@
 
 D455:
 ```shell
-roslaunch realsense2_camera rs_camera.launch enable_infra:=true \
-          infra_rgb:=true enable_gyro:=true enable_accel:=true \
-          unite_imu_method:=linear_interpolation
+roslaunch realsense2_camera rs_camera.launch enable_depth:=false enable_infra1:=true enable_gyro:=true enable_accel:=true unite_imu_method:=linear_interpolation
 ```
 
 
