@@ -44,6 +44,8 @@ def main():
     # you can use topics= [args.image_topic] to specify your topic name
     for topic, msg, t in bag.read_messages(topics=["/camera/infra1/image_rect_raw", "/camera/imu", "/camera/infra1/metadata"]):
         output_fname = ""
+        # if msg.header.stamp.to_sec() > 1655258134.21: # uncomment this if you want to filter by timestamps
+        #     continue
         if topic == "/camera/infra1/image_rect_raw":
             cv_img = bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
             # cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
@@ -67,9 +69,13 @@ def main():
     bag.close()
 
     # np.save("timestamp.npy", np.asarray(time_stamp))
+    # align the sequence length
+    time_stamp = time_stamp[:len(exposure_time.keys())]
+    time_stamp_float = time_stamp_float[:len(exposure_time.keys())]
     time_result = np.ndarray((len(time_stamp), 3), dtype=object)
     time_result[:, 0] = time_stamp
     time_result[:, 1] = time_stamp_float
+
     for i in range(len(time_stamp)):
         time_result[i, 2] = exposure_time[time_stamp[i]]
     np.savetxt(os.path.join(args.output_dir, "cam0/times.txt"), time_result, fmt=['%1i'] + ['%1f'] + ['%1f'])
