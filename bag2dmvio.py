@@ -85,6 +85,10 @@ def main():
             mask_list.append(i)
         else:
             print("no exp time found, skipped: {}".format(i))
+            # remove orphan images
+            img_name_to_delete = os.path.join(color_directory_path, str(time_stamp[i]) + ".jpg")
+            print("removing image: {}".format(img_name_to_delete))
+            os.remove(img_name_to_delete)
     time_result = time_result[mask_list, :]
     time_stamp = time_stamp[mask_list]
     time_stamp_float = time_stamp_float[mask_list]
