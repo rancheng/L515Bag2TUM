@@ -70,14 +70,24 @@ def main():
 
     # np.save("timestamp.npy", np.asarray(time_stamp))
     # align the sequence length
-    time_stamp = time_stamp[:len(exposure_time.keys())]
-    time_stamp_float = time_stamp_float[:len(exposure_time.keys())]
+    # time_stamp = time_stamp[:len(exposure_time.keys())]
+    # time_stamp_float = time_stamp_float[:len(exposure_time.keys())]
     time_result = np.ndarray((len(time_stamp), 3), dtype=object)
+    time_stamp = np.array(time_stamp)
+    time_stamp_float = np.array(time_stamp_float)
     time_result[:, 0] = time_stamp
     time_result[:, 1] = time_stamp_float
-
+    exp_time_klist = list(exposure_time.keys())
+    mask_list = []
     for i in range(len(time_stamp)):
-        time_result[i, 2] = exposure_time[time_stamp[i]]
+        if time_stamp[i] in exp_time_klist:
+            time_result[i, 2] = exposure_time[time_stamp[i]]
+            mask_list.append(i)
+        else:
+            print("no exp time found, skipped: {}".format(i))
+    time_result = time_result[mask_list, :]
+    time_stamp = time_stamp[mask_list]
+    time_stamp_float = time_stamp_float[mask_list]
     np.savetxt(os.path.join(args.output_dir, "cam0/times.txt"), time_result, fmt=['%1i'] + ['%1f'] + ['%1f'])
     np.savetxt(os.path.join(args.output_dir, "cam0/times_nesc.txt"), time_stamp, fmt=['%1i'])
     return
