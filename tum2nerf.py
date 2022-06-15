@@ -122,7 +122,7 @@ def dataset2nerf(dataset_dir):
                 frame = {
                     "file_path": file_path,
                     "sharpness": sharpness_i,
-                    "transform_matrix": pose_tf_data.tolist()
+                    "transform_matrix": pose_tf_data_flipped.tolist()
                 }
                 out['frames'].append(frame)
     with open(os.path.join(out_dataset_dir, "transforms.json"), "w") as outfile:
